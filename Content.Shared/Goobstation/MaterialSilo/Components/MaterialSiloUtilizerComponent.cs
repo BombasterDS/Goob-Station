@@ -7,4 +7,7 @@ namespace Content.Shared.Goobstation.MaterialSilo.Components;
 [Access(typeof(SharedMaterialSiloSystem))]
 public sealed partial class MaterialSiloUtilizerComponent : Component
 {
+    // Connected material silo
+    [DataField]
+    public EntityUid? MaterialSilo;
 }

@@ -1,3 +1,4 @@
+using Content.Shared.Goobstation.MaterialSilo;
 using Content.Shared.Whitelist;
 using Robust.Shared.Audio;
 using Robust.Shared.GameStates;
@@ -74,6 +75,12 @@ public enum MaterialStorageVisuals : byte
 {
     Inserting
 }
+
+/// <summary>
+/// Event raised before entity got inserted into storage
+/// </summary>
+[ByRefEvent]
+public record struct MaterialEntityBeforeInsertEvent(EntityUid User, EntityUid ToInsert, EntityUid Receiver, bool Handled = false);
 
 /// <summary>
 /// event raised on the materialStorage when a material entity is inserted into it.

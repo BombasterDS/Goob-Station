@@ -49,6 +49,9 @@
     price: 800
   - type: ResearchClient
   - type: TechnologyDatabase
+  #Goob
+  - type: DeviceNetwork
+    prefix: device-address-prefix-scrubber
 
 # a lathe that can be sped up with space lube / slowed down with glue
 - type: entity

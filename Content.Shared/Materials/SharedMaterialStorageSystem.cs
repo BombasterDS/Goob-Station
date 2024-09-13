@@ -257,6 +257,12 @@ public abstract class SharedMaterialStorageSystem : EntitySystem
 
         // Material Whitelist checked implicitly by CanChangeMaterialAmount();
 
+        var beforeInsertEv = new MaterialEntityBeforeInsertEvent(user, toInsert, receiver);
+        RaiseLocalEvent(receiver, ref beforeInsertEv);
+
+        if (beforeInsertEv.Handled)
+            return false;
+
         var multiplier = TryComp<StackComponent>(toInsert, out var stackComponent) ? stackComponent.Count : 1;
         var totalVolume = 0;
         foreach (var (mat, vol) in composition.MaterialComposition)
@@ -284,8 +290,8 @@ public abstract class SharedMaterialStorageSystem : EntitySystem
         _appearance.SetData(receiver, MaterialStorageVisuals.Inserting, true);
         Dirty(receiver, insertingComp);
 
-        var ev = new MaterialEntityInsertedEvent(material);
-        RaiseLocalEvent(receiver, ref ev);
+        var insertEv = new MaterialEntityInsertedEvent(material);
+        RaiseLocalEvent(receiver, ref insertEv);
         return true;
     }
 

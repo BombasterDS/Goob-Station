@@ -49,6 +49,14 @@
     price: 800
   - type: ResearchClient
   - type: TechnologyDatabase
+  - type: DeviceNetwork # GoobStation - MaterialSilo
+    deviceNetId: Wireless
+  - type: WirelessNetworkConnection
+    range: 200
+  - type: DeviceLinkSink
+    ports:
+      - MaterialSiloUtilizer 
+  - type: MaterialSiloUtilizer #GoobStation End
 
 # a lathe that can be sped up with space lube / slowed down with glue
 - type: entity

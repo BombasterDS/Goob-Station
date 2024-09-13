@@ -1,0 +1,31 @@
+- type: entity
+  id: MaterialSilo
+  parent: [ BaseMachinePowered, ConstructibleMachine ]
+  name: material silo
+  description: Bluespace storage connected to most lathes on the station.
+  components:
+  - type: Physics
+    bodyType: Static
+  - type: Transform
+    anchored: true
+    noRot: true
+  - type: Sprite
+    sprite: Goobstation/Structures/Machines/material_silo.rsi
+    layers:
+    - state: ore_silo
+    - state: inserting
+      visible: false
+      map: ["enum.MaterialStorageVisualLayers.Inserting"]
+  - type: DeviceNetwork
+    deviceNetId: Wireless
+  - type: WirelessNetworkConnection
+    range: 200
+  - type: DeviceLinkSource
+    ports:
+      - MaterialSilo
+  #- type: Machine
+  #  board: CargoTelepadMachineCircuitboard
+  - type: Appearance
+  - type: MaterialStorage
+  #- type: NameIdentifier
+  #  group: CargoTelepads

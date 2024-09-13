@@ -57,7 +57,10 @@
   description: "A salvaged shred of a much larger flag, colors bled together and faded from age."
   components:
   - type: Sprite
-    state: poster1_contraband
+    layers:
+    - state: poster1_contraband
+      map: [ "foldedLayer" ]
+    - state: rolled_contraband
 
 - type: entity
   parent: PosterBase

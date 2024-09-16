@@ -45,7 +45,8 @@ public sealed class MaterialStorageSystem : SharedMaterialStorageSystem
         EntityUid receiver,
         MaterialStorageComponent? storage = null,
         MaterialComponent? material = null,
-        PhysicalCompositionComponent? composition = null)
+        PhysicalCompositionComponent? composition = null,
+        bool silent = false) // Goobstation - Material Silo
     {
         if (!base.TryInsertMaterialEntity(user, toInsert, receiver, storage, material, composition))
             return false;

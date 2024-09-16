@@ -241,7 +241,8 @@ public abstract class SharedMaterialStorageSystem : EntitySystem
         EntityUid receiver,
         MaterialStorageComponent? storage = null,
         MaterialComponent? material = null,
-        PhysicalCompositionComponent? composition = null)
+        PhysicalCompositionComponent? composition = null,
+        bool silent = false) // Goobstation - MaterialSilo
     {
         if (!Resolve(receiver, ref storage))
             return false;

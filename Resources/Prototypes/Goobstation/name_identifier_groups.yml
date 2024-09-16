@@ -1,0 +1,5 @@
+- type: nameIdentifierGroup
+  id: MaterialSilos
+  prefix: SILO
+  minValue: 0
+  maxValue: 999

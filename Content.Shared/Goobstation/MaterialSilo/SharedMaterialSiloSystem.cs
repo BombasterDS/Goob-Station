@@ -42,7 +42,7 @@ public sealed partial class SharedMaterialSiloSystem : EntitySystem
         if (!_powerReceiverSystem.IsPowered(silo.Value))
             return;
 
-        if (_materialStorageSystem.TryInsertMaterialEntity(args.User, args.ToInsert, comp.SiloUid!.Value))
+        if (_materialStorageSystem.TryInsertMaterialEntity(args.User, args.ToInsert, comp.SiloUid!.Value, silent: true))
             args.Handled = true;
     }
 }

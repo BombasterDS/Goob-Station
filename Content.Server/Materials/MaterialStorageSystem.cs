@@ -1,4 +1,4 @@
-﻿using System.Linq;
+using System.Linq;
 using Content.Server.Administration.Logs;
 using Content.Shared.Materials;
 using Content.Shared.Popups;
@@ -93,17 +93,21 @@ public sealed class MaterialStorageSystem : SharedMaterialStorageSystem
         EntityUid receiver,
         MaterialStorageComponent? storage = null,
         MaterialComponent? material = null,
-        PhysicalCompositionComponent? composition = null)
+        PhysicalCompositionComponent? composition = null,
+        bool silent = false) // Goobstation - Material Silo
     {
         if (!Resolve(receiver, ref storage) || !Resolve(toInsert, ref material, ref composition, false))
             return false;
         if (TryComp<ApcPowerReceiverComponent>(receiver, out var power) && !power.Powered)
             return false;
-        if (!base.TryInsertMaterialEntity(user, toInsert, receiver, storage, material, composition))
+        if (!base.TryInsertMaterialEntity(user, toInsert, receiver, storage, material, composition, silent)) // Goobstation - Material Silo
             return false;
         _audio.PlayPvs(storage.InsertingSound, receiver);
-        _popup.PopupEntity(Loc.GetString("machine-insert-item", ("user", user), ("machine", receiver),
-            ("item", toInsert)), receiver);
+
+        // GoobStation - Material Silo
+        if (!silent)
+            _popup.PopupEntity(Loc.GetString("machine-insert-item", ("user", user), ("machine", receiver), ("item", toInsert)), receiver);
+
         QueueDel(toInsert);
 
         // Logging

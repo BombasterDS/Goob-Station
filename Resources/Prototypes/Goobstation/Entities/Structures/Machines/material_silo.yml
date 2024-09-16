@@ -23,9 +23,9 @@
   - type: DeviceLinkSource
     ports:
       - MaterialSilo
-  #- type: Machine
-  #  board: CargoTelepadMachineCircuitboard
+  - type: Machine
+    board: MaterialSiloCircuitboard
   - type: Appearance
   - type: MaterialStorage
-  #- type: NameIdentifier
-  #  group: CargoTelepads
+  - type: NameIdentifier
+    group: MaterialSilos

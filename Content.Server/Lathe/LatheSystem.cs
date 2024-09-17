@@ -29,6 +29,7 @@ using Robust.Server.GameObjects;
 using Robust.Shared.Audio.Systems;
 using Robust.Shared.Prototypes;
 using Robust.Shared.Timing;
+using Content.Server.Goobstation.MaterialSilo;
 
 namespace Content.Server.Lathe
 {
@@ -50,6 +51,7 @@ namespace Content.Server.Lathe
         [Dependency] private readonly SharedSolutionContainerSystem _solution = default!;
         [Dependency] private readonly StackSystem _stack = default!;
         [Dependency] private readonly TransformSystem _transform = default!;
+        [Dependency] private readonly MaterialSiloSystem _materialSilo = default!; // GoobStation
 
         /// <summary>
         /// Per-tick cache
@@ -181,7 +183,11 @@ namespace Content.Server.Lathe
                     ? (int) (-amount * component.MaterialUseMultiplier)
                     : -amount;
 
-                _materialStorage.TryChangeMaterialAmount(uid, mat, adjustedAmount);
+                // Goobstation - MaterialSilo
+                var leftAmount = _materialSilo.ChangeMaterialInSilo(uid, mat.Id, amount);
+
+                if (amount > 0)
+                    _materialStorage.TryChangeMaterialAmount(uid, mat, adjustedAmount);
             }
             component.Queue.Add(recipe);
 
@@ -313,7 +319,9 @@ namespace Content.Server.Lathe
 
         private void OnMaterialAmountChanged(EntityUid uid, LatheComponent component, ref MaterialAmountChangedEvent args)
         {
-            UpdateUserInterfaceState(uid, component);
+            // Goobstation - Material Silo - For perfomance
+            if (_uiSys.IsUiOpen(uid, LatheUiKey.Key))
+                UpdateUserInterfaceState(uid, component);
         }
 
         /// <summary>

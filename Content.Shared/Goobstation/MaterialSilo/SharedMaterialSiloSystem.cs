@@ -1,48 +1,82 @@
-using Content.Shared.DeviceLinking.Events;
 using Content.Shared.Goobstation.MaterialSilo.Components;
 using Content.Shared.Materials;
-using Content.Shared.Power.Components;
 using Content.Shared.Power.EntitySystems;
-using Microsoft.VisualBasic;
 
 namespace Content.Shared.Goobstation.MaterialSilo;
 
-public sealed partial class SharedMaterialSiloSystem : EntitySystem
+public abstract partial class SharedMaterialSiloSystem : EntitySystem
 {
-    [Dependency] private readonly SharedMaterialStorageSystem _materialStorageSystem = default!;
+    [Dependency] private readonly SharedMaterialStorageSystem _materialStorage = default!;
     [Dependency] private readonly SharedPowerReceiverSystem _powerReceiverSystem = default!;
+    [Dependency] private readonly SharedUserInterfaceSystem _uiSystem = default!;
     public override void Initialize()
     {
         base.Initialize();
 
-        SubscribeLocalEvent<MaterialSiloUtilizerComponent, MaterialEntityBeforeInsertEvent>(OnMaterialInsert);
-        SubscribeLocalEvent<MaterialSiloUtilizerComponent, NewLinkEvent>(OnUtilizerLink);
+        SubscribeLocalEvent<MaterialSiloComponent, MaterialAmountChangedEvent>(OnMaterialsChange);
     }
 
-    // Connects lathe to silo and move all materials to silo storage
-    private void OnUtilizerLink(Entity<MaterialSiloUtilizerComponent> utilizer, ref NewLinkEvent args)
+    public int GetSiloMaterialAmount(EntityUid uid, string material)
     {
-        var comp = utilizer.Comp;
-
-        if (!TryComp<MaterialStorageComponent>(utilizer, out var storage))
-            return;
-
-        comp.SiloUid = args.Source;
-    }
-
-    // Transfer materials from lathe to silo if it connected
-    private void OnMaterialInsert(Entity<MaterialSiloUtilizerComponent> entity, ref MaterialEntityBeforeInsertEvent args)
-    {
-        var comp = entity.Comp;
-        var silo = comp.SiloUid;
+        var silo = GetConnectedAndActiveSilo(uid);
 
         if (silo == null)
-            return;
+            return 0;
 
-        if (!_powerReceiverSystem.IsPowered(silo.Value))
-            return;
+        var amount = _materialStorage.GetMaterialAmount(silo.Value, material);
 
-        if (_materialStorageSystem.TryInsertMaterialEntity(args.User, args.ToInsert, comp.SiloUid!.Value, silent: true))
-            args.Handled = true;
+        return amount;
+    }
+
+    /// <summary>
+    /// Used for lathes to change materials in silo first and then use materials in lathe storage. Return the amount of material that
+    /// will be used from lathe storage.
+    /// </summary>
+    public int ChangeMaterialInSilo(EntityUid uid, string material, int amount)
+    {
+        var silo = GetConnectedAndActiveSilo(uid);
+
+        if (silo == null)
+            return amount;
+
+        var amountInSilo = _materialStorage.GetMaterialAmount(silo.Value, material);
+
+        if (amountInSilo >= amount)
+        {
+            _materialStorage.TryChangeMaterialAmount(silo.Value, material, -amount);
+
+            return 0;
+        }
+
+        var leftAmount = amount - amountInSilo;
+        _materialStorage.TryChangeMaterialAmount(silo.Value, material, -amountInSilo);
+
+        return leftAmount;
+    }
+
+    /// <summary>
+    /// Returns silo if it's powered and active
+    /// </summary>
+    private EntityUid? GetConnectedAndActiveSilo(EntityUid uid)
+    {
+        if (!TryComp<MaterialSiloUtilizerComponent>(uid, out var utilizer) || utilizer.SiloUid == null)
+            return null;
+
+        if (!HasComp<MaterialStorageComponent>(utilizer.SiloUid))
+            return null;
+
+        if (!_powerReceiverSystem.IsPowered(uid))
+            return null;
+
+        return utilizer.SiloUid;
+    }
+
+    private void OnMaterialsChange(Entity<MaterialSiloComponent> silo, ref MaterialAmountChangedEvent args)
+    {
+        // Need to update UI on lathes if someone uses it to prevent bugs
+        foreach (var utilizer in silo.Comp.UtilizersUids)
+        {
+            RaiseLocalEvent(utilizer, args);
+        }
     }
 }

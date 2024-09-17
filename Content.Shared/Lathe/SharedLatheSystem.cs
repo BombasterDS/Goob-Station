@@ -2,6 +2,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Content.Shared.Emag.Systems;
 using Content.Shared.Examine;
+using Content.Shared.Goobstation.MaterialSilo;
 using Content.Shared.Localizations;
 using Content.Shared.Materials;
 using Content.Shared.Research.Prototypes;
@@ -18,6 +19,7 @@ public abstract class SharedLatheSystem : EntitySystem
 {
     [Dependency] private readonly IPrototypeManager _proto = default!;
     [Dependency] private readonly SharedMaterialStorageSystem _materialStorage = default!;
+    [Dependency] private readonly SharedMaterialSiloSystem _materialSilo = default!; // Goobstation
 
     public readonly Dictionary<string, List<LatheRecipePrototype>> InverseRecipes = new();
 
@@ -58,8 +60,14 @@ public abstract class SharedLatheSystem : EntitySystem
         {
             var adjustedAmount = AdjustMaterial(needed, recipe.ApplyMaterialDiscount, component.MaterialUseMultiplier);
 
-            if (_materialStorage.GetMaterialAmount(uid, material) < adjustedAmount * amount)
+            // Goobstation - Material Silo
+            var siloAmount = _materialSilo.GetSiloMaterialAmount(uid, material.Id);
+
+            var totalAmount = _materialStorage.GetMaterialAmount(uid, material) + siloAmount; 
+
+            if (totalAmount < adjustedAmount * amount)
                 return false;
+            // Goobstation - Material Silo end
         }
         return true;
     }

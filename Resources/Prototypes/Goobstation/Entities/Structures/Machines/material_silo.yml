@@ -27,5 +27,6 @@
     board: MaterialSiloCircuitboard
   - type: Appearance
   - type: MaterialStorage
+  - type: MaterialSilo
   - type: NameIdentifier
     group: MaterialSilos

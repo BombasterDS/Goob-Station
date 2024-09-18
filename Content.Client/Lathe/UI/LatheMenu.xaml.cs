@@ -1,6 +1,8 @@
 using System.Linq;
 using System.Text;
+using Content.Client.Goobstation.Materials;
 using Content.Client.Materials;
+using Content.Client.Power.EntitySystems;
 using Content.Shared.Lathe;
 using Content.Shared.Lathe.Prototypes;
 using Content.Shared.Research.Prototypes;
@@ -23,6 +25,7 @@ public sealed partial class LatheMenu : DefaultWindow
     private readonly SpriteSystem _spriteSystem;
     private readonly LatheSystem _lathe;
     private readonly MaterialStorageSystem _materialStorage;
+    private readonly MaterialSiloSystem _materialSilo; // Goobstation - Material Silo
 
     public event Action<BaseButton.ButtonEventArgs>? OnServerListButtonPressed;
     public event Action<string, int>? RecipeQueueAction;
@@ -43,6 +46,7 @@ public sealed partial class LatheMenu : DefaultWindow
         _spriteSystem = _entityManager.System<SpriteSystem>();
         _lathe = _entityManager.System<LatheSystem>();
         _materialStorage = _entityManager.System<MaterialStorageSystem>();
+        _materialSilo = _entityManager.System<MaterialSiloSystem>(); // Goobstation - Material Silo
 
         SearchBar.OnTextChanged += _ =>
         {
@@ -147,6 +151,10 @@ public sealed partial class LatheMenu : DefaultWindow
             var sheets = adjustedAmount / (float) sheetVolume;
 
             var availableAmount = _materialStorage.GetMaterialAmount(Entity, id);
+
+            if (_materialSilo.HasPoweredSilo(Entity))
+                availableAmount += _materialSilo.GetSiloMaterialAmount(Entity, id);
+
             var missingAmount = Math.Max(0, adjustedAmount - availableAmount);
             var missingSheets = missingAmount / (float) sheetVolume;
 

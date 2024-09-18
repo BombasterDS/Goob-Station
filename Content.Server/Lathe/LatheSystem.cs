@@ -319,7 +319,7 @@ namespace Content.Server.Lathe
 
         private void OnMaterialAmountChanged(EntityUid uid, LatheComponent component, ref MaterialAmountChangedEvent args)
         {
-            // Goobstation - Material Silo - For perfomance
+            // Goobstation - Material Silo
             if (_uiSys.IsUiOpen(uid, LatheUiKey.Key))
                 UpdateUserInterfaceState(uid, component);
         }

@@ -12,6 +12,8 @@ using JetBrains.Annotations;
 using Robust.Shared.Audio.Systems;
 using Robust.Shared.Map;
 using Robust.Shared.Prototypes;
+using Content.Shared.Goobstation.MaterialSilo.Components;
+using Content.Server.Goobstation.MaterialSilo;
 
 namespace Content.Server.Materials;
 
@@ -26,7 +28,7 @@ public sealed class MaterialStorageSystem : SharedMaterialStorageSystem
     [Dependency] private readonly SharedAudioSystem _audio = default!;
     [Dependency] private readonly SharedPopupSystem _popup = default!;
     [Dependency] private readonly StackSystem _stackSystem = default!;
-
+    [Dependency] private readonly MaterialSiloSystem _materialSilo = default!; // Goobstation
     public override void Initialize()
     {
         base.Initialize();
@@ -53,7 +55,7 @@ public sealed class MaterialStorageSystem : SharedMaterialStorageSystem
 
         var uid = GetEntity(msg.Entity);
 
-        if (!TryComp<MaterialStorageComponent>(uid, out var component))
+        if (!TryComp<MaterialStorageComponent>(uid, out var component) || !TryComp<MaterialSiloUtilizerComponent>(uid, out var utilizer)) // Goobstation
             return;
 
         if (!Exists(uid))
@@ -78,10 +80,41 @@ public sealed class MaterialStorageSystem : SharedMaterialStorageSystem
             volume = sheetsToExtract * volumePerSheet;
         }
 
-        if (volume <= 0 || !TryChangeMaterialAmount(uid, msg.Material, -volume))
+        // Goobstation - start
+        if (volume <= 0)
             return;
 
+        do
+        {
+            if (utilizer == null || !TryComp<MaterialStorageComponent>(utilizer.SiloUid, out var siloStorage))
+                break;
+
+            if (!siloStorage.CanEjectStoredMaterials)
+                break;
+
+            if (!_materialSilo.HasPoweredSilo(uid))
+                break;
+
+            if (!TryChangeMaterialAmount(utilizer.SiloUid.Value, msg.Material, -volume, siloStorage))
+                break;
+
+            var siloMats = SpawnMultipleFromMaterial(volume, material, Transform(uid).Coordinates, out _);
+
+            foreach (var mat in siloMats.Where(mat => !TerminatingOrDeleted(mat)))
+            {
+                _stackSystem.TryMergeToContacts(mat);
+            }
+
+            return;
+        }
+        while (false);
+
+        if (!TryChangeMaterialAmount(uid, msg.Material, -volume))
+            return;
+        // Goobstation - end
+
         var mats = SpawnMultipleFromMaterial(volume, material, Transform(uid).Coordinates, out _);
+
         foreach (var mat in mats.Where(mat => !TerminatingOrDeleted(mat)))
         {
             _stackSystem.TryMergeToContacts(mat);

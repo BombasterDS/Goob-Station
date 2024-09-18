@@ -170,9 +170,6 @@ public abstract partial class SharedMaterialSiloSystem : EntitySystem
 
     private void OnMaterialsChange(Entity<MaterialSiloComponent> silo, ref MaterialAmountChangedEvent args)
     {
-        if (!_timing.IsFirstTimePredicted)
-            return;
-
         // Need to update UI on lathes if someone uses it to prevent bugs
         foreach (var utilizer in silo.Comp.UtilizersUids)
         {
@@ -180,3 +177,4 @@ public abstract partial class SharedMaterialSiloSystem : EntitySystem
         }
     }
 }
+

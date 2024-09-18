@@ -177,11 +177,11 @@ public abstract class SharedMaterialStorageSystem : EntitySystem
         else
             component.Storage[materialId] = existing;
 
-        if (dirty)
-            Dirty(uid, component);
-
         var ev = new MaterialAmountChangedEvent();
         RaiseLocalEvent(uid, ref ev);
+
+        if (dirty)
+            Dirty(uid, component);
 
         return true;
     }

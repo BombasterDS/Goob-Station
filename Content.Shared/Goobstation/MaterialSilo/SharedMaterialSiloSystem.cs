@@ -125,13 +125,10 @@ public abstract partial class SharedMaterialSiloSystem : EntitySystem
     /// </summary>
     private EntityUid? GetConnectedAndActiveSilo(EntityUid uid)
     {
-        if (!TryComp<MaterialSiloUtilizerComponent>(uid, out var utilizer) || utilizer.SiloUid == null)
-            return null;
-
-        if (!HasComp<MaterialStorageComponent>(utilizer.SiloUid))
-            return null;
-
-        if (!_powerReceiver.IsPowered(utilizer.SiloUid.Value))
+        if (!TryComp<MaterialSiloUtilizerComponent>(uid, out var utilizer) 
+            || utilizer.SiloUid == null
+            || !HasComp<MaterialStorageComponent>(utilizer.SiloUid)
+            || !_powerReceiver.IsPowered(utilizer.SiloUid.Value))
             return null;
 
         return utilizer.SiloUid;
